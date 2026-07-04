@@ -1,1 +1,649 @@
-file:///Users/annatoropova/Downloads/test-anna-benevolenskaya.html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тело знает первым — тест стратегии</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#0B0908;
+  --bg-deep:#151210;
+  --card:#17130F;
+  --card-line:#332B20;
+  --gold:#C9A24A;
+  --gold-soft:#E4C878;
+  --gold-dim:#8A6F35;
+  --ink:#ECE4D6;
+  --muted:#9C8F79;
+  --wine:#5C1F26;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 8%, rgba(201,162,74,0.07), transparent 40%),
+    radial-gradient(circle at 85% 92%, rgba(201,162,74,0.06), transparent 40%);
+  color:var(--ink);
+  font-family:'Manrope', sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:34px 16px 70px;
+  line-height:1.55;
+}
+
+.wrap{ width:100%; max-width:640px; }
+
+.eyebrow{
+  font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--gold); font-weight:700; text-align:center; margin-bottom:14px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.eyebrow .rule{ width:22px; height:1px; background:var(--gold-dim); }
+
+h1{
+  font-family:'Cormorant Garamond', serif; font-weight:600; font-style:italic;
+  font-size:clamp(26px,5.5vw,36px); text-align:center; margin-bottom:10px; color:var(--gold-soft);
+  letter-spacing:.01em;
+}
+
+.sub{
+  text-align:center; color:var(--muted); font-size:14.5px; max-width:480px; margin:0 auto 30px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--card-line);
+  border-radius:4px;
+  padding:40px 32px;
+  position:relative;
+  min-height:360px;
+  box-shadow:0 0 0 1px rgba(201,162,74,0.04), 0 30px 60px -30px rgba(0,0,0,0.6);
+}
+.card::before, .card::after{
+  content:''; position:absolute; width:16px; height:16px; border:1px solid var(--gold-dim);
+}
+.card::before{ top:10px; left:10px; border-right:none; border-bottom:none; }
+.card::after{ bottom:10px; right:10px; border-left:none; border-top:none; }
+
+.icon-row{ display:flex; justify-content:center; margin-bottom:22px; opacity:.9; }
+.icon-row svg{ width:34px; height:34px; }
+
+.progress-row{ display:flex; gap:3px; margin-bottom:26px; flex-wrap:wrap; }
+.progress-seg{ flex:1; min-width:5px; height:2px; background:var(--card-line); overflow:hidden; }
+.progress-seg i{ display:block; height:100%; width:0%; background:var(--gold); transition:width .3s ease; }
+
+.qnum{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:14px; color:var(--gold);
+  margin-bottom:14px; text-align:center;
+}
+
+.qtext{
+  font-family:'Cormorant Garamond', serif; font-weight:500; font-size:clamp(20px,4vw,25px);
+  margin-bottom:26px; line-height:1.4; text-align:center; color:var(--ink);
+}
+
+.options{ display:flex; flex-direction:column; gap:10px; }
+
+.opt{
+  text-align:left; border:1px solid var(--card-line); background:rgba(255,255,255,0.02);
+  border-radius:3px; padding:14px 18px; font-family:'Manrope', sans-serif; font-size:14.5px;
+  color:var(--ink); cursor:pointer; transition:border-color .15s ease, background .15s ease;
+}
+.opt:hover{ border-color:var(--gold-dim); background:rgba(201,162,74,0.06); }
+.opt.chosen{ border-color:var(--gold); background:rgba(201,162,74,0.1); }
+
+.nav-back{
+  display:block; margin:22px auto 0; font-size:12.5px; color:var(--muted); background:none;
+  border:none; cursor:pointer; visibility:hidden;
+}
+.nav-back.show{ visibility:visible; }
+.nav-back:hover{ color:var(--gold); }
+
+.intro-btn{
+  display:block; width:100%; margin-top:10px; background:var(--gold); color:#141008;
+  border:none; border-radius:3px; padding:16px; font-weight:700; font-size:14.5px; cursor:pointer;
+  letter-spacing:.03em; text-transform:uppercase; transition:opacity .15s ease;
+}
+.intro-btn:hover{ opacity:.88; }
+
+.intro-list{ list-style:none; margin:20px 0 26px; display:flex; flex-direction:column; gap:11px; }
+.intro-list li{ font-size:14px; padding-left:22px; position:relative; color:var(--ink); }
+.intro-list li::before{ content:"—"; position:absolute; left:0; color:var(--gold); }
+
+.intro-note{
+  font-size:12.5px; color:var(--muted); background:rgba(201,162,74,0.05);
+  border:1px solid var(--card-line); border-radius:3px; padding:12px 14px; margin-bottom:8px;
+}
+
+.result-hidden{ display:none; }
+
+.gauge-wrap{ display:flex; flex-direction:column; align-items:center; margin-bottom:6px; }
+.gauge-label-row{
+  display:flex; justify-content:space-between; width:100%; max-width:280px;
+  font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;
+  margin-top:6px; font-weight:600;
+}
+
+.result-title{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:600;
+  font-size:clamp(22px,4.5vw,28px); text-align:center; margin:16px 0 6px; color:var(--gold-soft);
+}
+.result-percent{
+  text-align:center; color:var(--gold); font-weight:700; font-size:12px; letter-spacing:.06em;
+  text-transform:uppercase; margin-bottom:20px;
+}
+.result-text{ font-size:14.5px; margin-bottom:24px; color:var(--ink); }
+.result-text p{ margin-bottom:12px; }
+
+.cats{ display:flex; flex-direction:column; gap:15px; margin-bottom:28px; padding-top:20px; border-top:1px solid var(--card-line); }
+.cat-head{ display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+.cat-name{ font-weight:600; color:var(--ink); }
+.cat-tag{ color:var(--gold); font-size:12px; }
+.cat-bar-bg{ height:4px; background:var(--card-line); overflow:hidden; }
+.cat-bar-fill{ height:100%; background:linear-gradient(90deg, var(--gold-dim), var(--gold-soft)); width:0%; transition:width .8s ease; }
+
+.focus-box{
+  background:rgba(201,162,74,0.06); border:1px solid var(--card-line); border-radius:3px;
+  padding:20px 22px; margin-bottom:22px; border-left:2px solid var(--gold);
+}
+.focus-box .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); font-weight:700; margin-bottom:8px; }
+.focus-box p{ font-size:14px; color:var(--ink); }
+
+.mirror-box{ background:rgba(255,255,255,0.02); border:1px solid var(--card-line); border-radius:3px; padding:20px 22px; margin-bottom:28px; }
+.mirror-box .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); font-weight:700; margin-bottom:8px; }
+.mirror-box p{ font-size:14px; color:var(--ink); }
+
+.cta{ background:linear-gradient(180deg, #17130F, #0F0C09); border:1px solid var(--gold-dim); border-radius:4px; padding:30px 26px; position:relative; }
+.cta .icon-row{ margin-bottom:16px; }
+.cta .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.14em; color:var(--gold); font-weight:700; text-align:center; margin-bottom:10px; }
+.cta h3{ font-family:'Cormorant Garamond', serif; color:var(--gold-soft); font-style:italic; font-size:23px; font-weight:600; margin-bottom:14px; text-align:center; line-height:1.35; }
+.cta > p.lead{ color:var(--muted); font-size:13.5px; text-align:center; margin-bottom:24px; }
+
+.benefits{ display:flex; flex-direction:column; gap:15px; margin-bottom:26px; }
+.benefit{ display:flex; gap:13px; align-items:flex-start; }
+.benefit .num{ font-family:'Cormorant Garamond', serif; color:var(--gold); font-style:italic; font-weight:600; font-size:19px; min-width:22px; }
+.benefit .txt{ color:#DCD2BE; font-size:13.5px; }
+.benefit .txt b{ color:var(--gold-soft); font-weight:700; }
+
+.cta button{
+  background:var(--gold); color:#141008; border:none; border-radius:3px; padding:16px 20px;
+  font-weight:700; font-size:14px; cursor:pointer; width:100%; letter-spacing:.03em; text-transform:uppercase;
+  transition:opacity .15s ease;
+}
+.cta button:hover{ opacity:.9; }
+.cta .fine{ color:#6E624C; font-size:11.5px; text-align:center; margin-top:14px; }
+
+.retake{ display:block; text-align:center; margin-top:20px; font-size:12.5px; color:var(--muted); background:none; border:none; cursor:pointer; }
+.retake:hover{ color:var(--gold); }
+
+@media (max-width:480px){ .card{ padding:30px 20px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow"><span class="rule"></span>Анна Беневоленская<span class="rule"></span></div>
+  <h1>Тело знает первым</h1>
+  <p class="sub">40 вопросов о том, что происходит в теле, когда рядом мужчина — до того, как включается голова. Тело не умеет притворяться так же хорошо, как мысли.</p>
+
+  <div class="card" id="card">
+
+    <div id="screen-intro">
+      <div class="icon-row">
+        <svg viewBox="0 0 60 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 15 C 15 -2, 45 -2, 58 15 C 45 32, 15 32, 2 15 Z" stroke="#C9A24A" stroke-width="1"/>
+          <circle cx="30" cy="15" r="6" stroke="#C9A24A" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="qtext" style="margin-bottom:6px;">Прежде чем начать</div>
+      <ul class="intro-list">
+        <li>Отвечай телом, а не тем, что «звучит правильно» — первым импульсом</li>
+        <li>Здесь нет плохих ответов: то, что живёт в теле сейчас, — просто текущая точка</li>
+        <li>В конце — карта по 8 телесным зонам и приглашение на аудит с Анной</li>
+      </ul>
+      <div class="intro-note">Займёт 7–9 минут. Чем честнее тело в ответах — тем точнее результат.</div>
+      <button class="intro-btn" onclick="startQuiz()">Начать тест</button>
+    </div>
+
+    <div id="screen-quiz" style="display:none;">
+      <div class="progress-row" id="progressRow"></div>
+      <div class="qnum" id="qnum"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="options" id="options"></div>
+      <button class="nav-back" id="backBtn" onclick="goBack()">← вернуться к предыдущему</button>
+    </div>
+
+    <div id="screen-result" class="result-hidden">
+      <div class="gauge-wrap">
+        <svg id="gauge" width="260" height="150" viewBox="0 0 260 150"></svg>
+        <div class="gauge-label-row"><span>Тело в напряжении</span><span>Тело в доверии</span></div>
+      </div>
+      <div class="result-percent" id="resultPercent"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-text" id="resultText"></div>
+
+      <div class="cats" id="cats"></div>
+
+      <div class="focus-box">
+        <div class="k">Где паттерн живёт сильнее всего</div>
+        <p id="focusText"></p>
+      </div>
+
+      <div class="mirror-box">
+        <div class="k">Заметь это в себе</div>
+        <p id="mirrorText"></p>
+      </div>
+
+      <div class="cta">
+        <div class="icon-row">
+          <svg viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 48 C10 40, 6 30, 8 20 C9 12, 14 5, 20 2 C26 5, 31 12, 32 20 C34 30, 30 40, 20 48 Z" stroke="#C9A24A" stroke-width="1"/>
+            <line x1="20" y1="10" x2="20" y2="40" stroke="#C9A24A" stroke-width="0.6" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="k">Личный разбор с Анной Беневоленской</div>
+        <h3>Аудит по смене стратегии</h3>
+        <p class="lead">Тест показал, где именно в теле живёт стратегия. На аудите Анна проходит с тобой этот путь дальше — лично, через тело и через твою историю.</p>
+
+        <div class="benefits">
+          <div class="benefit">
+            <div class="num">1</div>
+            <div class="txt"><b>Телесную диагностику паттерна.</b> Найдём, в какой именно части тела и с какого момента живёт напряжение, которое управляет твоими реакциями на близость — не в теории, а через то, что чувствует твоё тело прямо сейчас.</div>
+          </div>
+          <div class="benefit">
+            <div class="num">2</div>
+            <div class="txt"><b>Точную карту сценария.</b> Момент, который «научил» тело держать оборону — назовём его прямо, без общих формулировок.</div>
+          </div>
+          <div class="benefit">
+            <div class="num">3</div>
+            <div class="txt"><b>Личную стратегию перехода.</b> Не общий список упражнений, а маршрут, собранный под твоё тело, твой темп и твою историю отношений.</div>
+          </div>
+          <div class="benefit">
+            <div class="num">4</div>
+            <div class="txt"><b>План на случай отката.</b> Что делать телу и тебе в момент, когда тянет снова сжаться и взять всё под контроль.</div>
+          </div>
+        </div>
+
+        <button onclick="wantAudit()">Записаться на аудит</button>
+        <div class="fine">Формат — личный разбор с Анной. Количество мест на неделю ограничено.</div>
+      </div>
+
+      <button class="retake" onclick="location.reload()">Пройти тест заново</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const questions = [
+  // ТЕЛО И КОНТРОЛЬ
+  {cat:"tension", catName:"Тело и контроль", text:"Когда рядом мужчина, твои плечи и шея чаще:", options:[
+    {t:"Напряжены, даже если внешне я выгляжу спокойной", s:0},
+    {t:"Расслабляются не сразу, а спустя время", s:1},
+    {t:"Расслаблены почти сразу", s:2},
+  ]},
+  {cat:"tension", catName:"Тело и контроль", text:"Замечаешь ли, что сжимаешь челюсть или руки, когда решение принимает кто-то другой:", options:[
+    {t:"Да, тело реагирует раньше, чем я успеваю подумать", s:0},
+    {t:"Иногда, если решение действительно важное", s:1},
+    {t:"Нет, тело спокойно принимает это", s:2},
+  ]},
+  {cat:"tension", catName:"Тело и контроль", text:"В конце дня, полного дел, твоё тело ощущается как:", options:[
+    {t:"Сжатый кулак, который не может разжаться", s:0},
+    {t:"Уставшее, но постепенно отпускающее", s:1},
+    {t:"Тяжёлое, но спокойное", s:2},
+  ]},
+  {cat:"tension", catName:"Тело и контроль", text:"Когда мужчина подходит помочь физически — донести, поднять, сделать — твоё тело:", options:[
+    {t:"Напрягается и хочет сделать это первой, на автомате", s:0},
+    {t:"Замирает на секунду, прежде чем позволить", s:1},
+    {t:"Расслабляется и позволяет сразу", s:2},
+  ]},
+  {cat:"tension", catName:"Тело и контроль", text:"Как часто в течение обычного дня ты замечаешь у себя зажатые плечи или стиснутые зубы:", options:[
+    {t:"Почти постоянно, это стало фоном", s:0},
+    {t:"Периодически, в стрессовых моментах", s:1},
+    {t:"Редко — тело чаще расслаблено", s:2},
+  ]},
+
+  // ВЗГЛЯД И ВНИМАНИЕ
+  {cat:"gaze", catName:"Взгляд", text:"Когда мужчина долго смотрит на тебя без слов, первая реакция:", options:[
+    {t:"Внутреннее «что не так» — ищу подвох во взгляде", s:0},
+    {t:"Немного неловко, отвожу глаза", s:1},
+    {t:"Спокойно выдерживаю взгляд, не тороплюсь его прервать", s:2},
+  ]},
+  {cat:"gaze", catName:"Взгляд", text:"Ловишь ли себя на том, что «сканируешь» мужчину в первые секунды, вместо того чтобы просто быть в моменте:", options:[
+    {t:"Да, почти сразу оцениваю и делаю выводы", s:0},
+    {t:"Иногда, зависит от ситуации", s:1},
+    {t:"Нет, могу просто смотреть, не анализируя", s:2},
+  ]},
+  {cat:"gaze", catName:"Взгляд", text:"Когда тебя рассматривают с восхищением, глаза выдают:", options:[
+    {t:"Настороженность, я быстро отвожу взгляд", s:0},
+    {t:"Смущение с лёгкой улыбкой", s:1},
+    {t:"Спокойное принятие, встречный взгляд", s:2},
+  ]},
+  {cat:"gaze", catName:"Взгляд", text:"Сложно ли тебе смотреть в глаза, когда говоришь о своих чувствах:", options:[
+    {t:"Да, почти всегда отвожу взгляд в такие моменты", s:0},
+    {t:"Иногда, если тема действительно уязвимая", s:1},
+    {t:"Нет, могу смотреть прямо", s:2},
+  ]},
+  {cat:"gaze", catName:"Взгляд", text:"После близкого разговора, глаза напротив, ты чаще чувствуешь:", options:[
+    {t:"Желание отвести взгляд и вернуться к делам", s:0},
+    {t:"Лёгкую неловкость, но остаюсь в контакте", s:1},
+    {t:"Тепло и желание остаться в этом моменте дольше", s:2},
+  ]},
+
+  // РУКИ И ЗАБОТА
+  {cat:"hands", catName:"Руки и забота", text:"Когда предлагают помощь руками — понести, помочь на кухне — твои руки:", options:[
+    {t:"Уже заняты делом, я не успеваю остановиться и отдать", s:0},
+    {t:"Отдают, но с лёгким сопротивлением", s:1},
+    {t:"Спокойно освобождаются и позволяют", s:2},
+  ]},
+  {cat:"hands", catName:"Руки и забота", text:"Как часто твои руки «в деле» даже во время отдыха — телефон, уборка, заметки:", options:[
+    {t:"Почти всегда, руки не умеют быть без дела", s:0},
+    {t:"Иногда, если появляется тревога", s:1},
+    {t:"Редко — руки умеют просто лежать спокойно", s:2},
+  ]},
+  {cat:"hands", catName:"Руки и забота", text:"Когда мужчина берёт твою руку в напряжённый момент, ощущение:", options:[
+    {t:"Внутреннее сопротивление — хочется справиться самой", s:0},
+    {t:"Принимаю, но чувствую себя немного странно", s:1},
+    {t:"Расслабляюсь и опираюсь", s:2},
+  ]},
+  {cat:"hands", catName:"Руки и забота", text:"Объятия, забота руками другого человека — как часто ты позволяешь себе это:", options:[
+    {t:"Почти никогда, неловко просто получать", s:0},
+    {t:"Иногда, по особым случаям", s:1},
+    {t:"Регулярно, это естественная часть заботы о себе", s:2},
+  ]},
+  {cat:"hands", catName:"Руки и забота", text:"Когда что-то тяжёлое нужно передать — в прямом и переносном смысле — руки:", options:[
+    {t:"Не разжимаются, привычнее нести самой", s:0},
+    {t:"Разжимаются с усилием", s:1},
+    {t:"Разжимаются легко", s:2},
+  ]},
+
+  // ДЫХАНИЕ И РАССЛАБЛЕНИЕ
+  {cat:"breath", catName:"Дыхание", text:"Замечаешь ли, что дыхание становится поверхностным рядом с мужчиной, от которого что-то зависит:", options:[
+    {t:"Да, дышу задержанно, будто готовлюсь к действию", s:0},
+    {t:"Иногда, в напряжённые моменты", s:1},
+    {t:"Нет, дыхание остаётся ровным", s:2},
+  ]},
+  {cat:"breath", catName:"Дыхание", text:"Отдых для тебя ощущается в теле как:", options:[
+    {t:"Секунда паузы перед следующей задачей", s:0},
+    {t:"Медленное выдыхание, которое требует времени", s:1},
+    {t:"Полное расслабление без спешки вернуться к делам", s:2},
+  ]},
+  {cat:"breath", catName:"Дыхание", text:"Когда ты действительно устала, тело позволяет тебе остановиться:", options:[
+    {t:"Только когда сил физически больше нет", s:0},
+    {t:"После внутреннего разрешения, но не сразу", s:1},
+    {t:"Как только чувствую усталость", s:2},
+  ]},
+  {cat:"breath", catName:"Дыхание", text:"В присутствии мужчины, которому доверяешь, дыхание:", options:[
+    {t:"Всё равно контролируется, я слежу за собой", s:0},
+    {t:"Постепенно становится свободнее", s:1},
+    {t:"Сразу становится глубже и свободнее", s:2},
+  ]},
+  {cat:"breath", catName:"Дыхание", text:"Сон после напряжённого дня, когда он рядом:", options:[
+    {t:"Поверхностный, тело не до конца отпускает контроль", s:0},
+    {t:"Средний — засыпаю не сразу, но сплю спокойно", s:1},
+    {t:"Глубокий и спокойный", s:2},
+  ]},
+
+  // ГОЛОС И СЛОВА
+  {cat:"voice", catName:"Голос", text:"Когда тебе плохо, твой голос при разговоре с мужчиной:", options:[
+    {t:"Звучит ровно и бодро, даже если внутри всё иначе", s:0},
+    {t:"Немного дрожит, но я стараюсь его выровнять", s:1},
+    {t:"Звучит так, как я на самом деле себя чувствую", s:2},
+  ]},
+  {cat:"voice", catName:"Голос", text:"Сказать вслух «мне нужна поддержка» физически ощущается как:", options:[
+    {t:"Комок в горле, слова застревают", s:0},
+    {t:"Небольшое усилие, но получается", s:1},
+    {t:"Легко и естественно", s:2},
+  ]},
+  {cat:"voice", catName:"Голос", text:"Как часто ты повышаешь голос или ускоряешь речь, беря контроль над ситуацией:", options:[
+    {t:"Часто, это моя реакция на неопределённость", s:0},
+    {t:"Иногда, в стрессе", s:1},
+    {t:"Редко, голос остаётся ровным", s:2},
+  ]},
+  {cat:"voice", catName:"Голос", text:"Когда мужчина говорит тебе нежные слова, тело реагирует:", options:[
+    {t:"Лёгким недоверием — «мало ли что говорят»", s:0},
+    {t:"Приятным смущением", s:1},
+    {t:"Теплом, которое разливается по телу", s:2},
+  ]},
+  {cat:"voice", catName:"Голос", text:"Просить о помощи вслух для тебя физически:", options:[
+    {t:"Почти невозможно — голос будто отказывается", s:0},
+    {t:"Возможно, но требует внутреннего усилия", s:1},
+    {t:"Легко, голос звучит свободно", s:2},
+  ]},
+
+  // БЛИЗОСТЬ И ДИСТАНЦИЯ
+  {cat:"intimacy", catName:"Близость и дистанция", text:"Когда отношения становятся по-настоящему близкими, тело:", options:[
+    {t:"Ищет повод отстраниться — работа, дела, дистанция", s:0},
+    {t:"Немного напрягается, но остаётся", s:1},
+    {t:"Раскрывается навстречу близости", s:2},
+  ]},
+  {cat:"intimacy", catName:"Близость и дистанция", text:"Объятия, которые длятся дольше обычного, вызывают:", options:[
+    {t:"Желание закончить их первой", s:0},
+    {t:"Смешанные чувства — приятно, но и неловко", s:1},
+    {t:"Желание остаться в них подольше", s:2},
+  ]},
+  {cat:"intimacy", catName:"Близость и дистанция", text:"После ссоры первое движение тела:", options:[
+    {t:"Отстраниться физически — выйти из комнаты, отвернуться", s:0},
+    {t:"Остаться рядом, но молчать", s:1},
+    {t:"Потянуться друг к другу, несмотря на напряжение", s:2},
+  ]},
+  {cat:"intimacy", catName:"Близость и дистанция", text:"Насколько легко тебе оставаться в одном пространстве с мужчиной, ничего не делая вместе:", options:[
+    {t:"Сложно, тело просит движения и дела", s:0},
+    {t:"Могу, но недолго", s:1},
+    {t:"Легко, тело умеет просто быть рядом", s:2},
+  ]},
+  {cat:"intimacy", catName:"Близость и дистанция", text:"Когда он хочет обняться просто так, не для секса, реакция тела:", options:[
+    {t:"Настороженность — «а что он хочет на самом деле»", s:0},
+    {t:"Принимаю, хотя немного странно без повода", s:1},
+    {t:"Тело сразу откликается теплом", s:2},
+  ]},
+
+  // РЕСУРС ЧЕРЕЗ ТЕЛО
+  {cat:"resource", catName:"Ресурс и тело", text:"Ради заработка или результата ты чаще игнорируешь сигналы тела:", options:[
+    {t:"Регулярно — тело подождёт, дела важнее", s:0},
+    {t:"Иногда, когда действительно нужно", s:1},
+    {t:"Редко — стараюсь слышать тело раньше, чем оно кричит", s:2},
+  ]},
+  {cat:"resource", catName:"Ресурс и тело", text:"Мысль «если я остановлюсь — потеряю то, что построила» ощущается в теле как:", options:[
+    {t:"Постоянное лёгкое напряжение, которое не отпускает", s:0},
+    {t:"Периодическая тревога", s:1},
+    {t:"Не актуальна, тело спокойно даже в паузах", s:2},
+  ]},
+  {cat:"resource", catName:"Ресурс и тело", text:"Когда мужчина предлагает взять на себя часть финансовой или бытовой нагрузки, тело:", options:[
+    {t:"Сжимается — «я справлюсь», даже если сил нет", s:0},
+    {t:"Расслабляется не сразу", s:1},
+    {t:"Сразу выдыхает с облегчением", s:2},
+  ]},
+  {cat:"resource", catName:"Ресурс и тело", text:"Усталость от того, что «тащишь всё сама», ощущается:", options:[
+    {t:"Как хроническое, почти привычное состояние", s:0},
+    {t:"Волнами — то лучше, то хуже", s:1},
+    {t:"Редко, потому что нагрузка распределена", s:2},
+  ]},
+  {cat:"resource", catName:"Ресурс и тело", text:"Тело подаёт сигналы — головная боль, зажимы, бессонница — как быстро ты реагируешь:", options:[
+    {t:"Игнорирую, пока не станет совсем тяжело", s:0},
+    {t:"Замечаю, но откладываю заботу о себе", s:1},
+    {t:"Реагирую сразу, забочусь о теле вовремя", s:2},
+  ]},
+
+  // ЖЕЛАНИЕ И ЧУВСТВЕННОСТЬ
+  {cat:"desire", catName:"Желание", text:"Влечение и желание близости у тебя чаще связаны с:", options:[
+    {t:"Ощущением, что «пора», а не с настоящим импульсом тела", s:0},
+    {t:"Смесью настоящего желания и обязанности", s:1},
+    {t:"Живым, настоящим откликом тела", s:2},
+  ]},
+  {cat:"desire", catName:"Желание", text:"После насыщенного рабочего периода замечаешь ли снижение желания и чувственности:", options:[
+    {t:"Да, почти всегда в такие периоды тело «выключается»", s:0},
+    {t:"Иногда", s:1},
+    {t:"Редко, чувственность не зависит от загруженности", s:2},
+  ]},
+  {cat:"desire", catName:"Желание", text:"Позволяешь ли себе чувственные удовольствия без повода — ванна, красивое бельё, медленное утро:", options:[
+    {t:"Почти никогда, кажется, что это лишнее", s:0},
+    {t:"Иногда, как редкое исключение", s:1},
+    {t:"Регулярно, это часть заботы о себе", s:2},
+  ]},
+  {cat:"desire", catName:"Желание", text:"Тело ощущает разницу между «я должна быть желанной» и «я хочу быть в контакте с собой»:", options:[
+    {t:"Нет, эти два ощущения слиты, я живу первым", s:0},
+    {t:"Иногда различаю, но не всегда следую второму", s:1},
+    {t:"Да, ясно чувствую разницу и выбираю контакт с собой", s:2},
+  ]},
+  {cat:"desire", catName:"Желание", text:"В целом твоё тело сейчас ощущается как:", options:[
+    {t:"Инструмент для достижения целей", s:0},
+    {t:"Что-то среднее между инструментом и источником удовольствия", s:1},
+    {t:"Источник удовольствия и чувствительности", s:2},
+  ]},
+];
+
+const catMeta = {
+  tension:{name:"Тело и контроль", low:"держишь тело в постоянном напряжении, даже когда рядом безопасно", high:"позволяешь телу расслабиться и передать контроль"},
+  gaze:{name:"Взгляд", low:"используешь взгляд для оценки и защиты, а не для контакта", high:"выдерживаешь взгляд и остаёшься в нём"},
+  hands:{name:"Руки и забота", low:"рукам сложно остановиться и принять заботу", high:"легко отпускаешь и позволяешь заботиться о себе"},
+  breath:{name:"Дыхание", low:"дышишь поверхностно, будто готовишься к действию", high:"дышишь свободно даже в близости"},
+  voice:{name:"Голос", low:"голос прячет настоящие чувства за ровностью и бодростью", high:"говоришь голосом, который отражает то, что внутри"},
+  intimacy:{name:"Близость и дистанция", low:"тело ищет повод отстраниться именно в моменты настоящей близости", high:"тело раскрывается навстречу близости"},
+  resource:{name:"Ресурс и тело", low:"игнорируешь сигналы тела ради результата и контроля", high:"слышишь тело раньше, чем оно начинает кричать"},
+  desire:{name:"Желание", low:"желание подчинено «надо», а не настоящему импульсу тела", high:"живёшь в контакте с собственной чувственностью"},
+};
+
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+
+function startQuiz(){
+  document.getElementById('screen-intro').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'block';
+  buildProgress();
+  renderQuestion();
+}
+
+function buildProgress(){
+  const row = document.getElementById('progressRow');
+  row.innerHTML = '';
+  questions.forEach((_,i)=>{
+    const seg = document.createElement('div');
+    seg.className = 'progress-seg';
+    seg.innerHTML = '<i id="seg-'+i+'"></i>';
+    row.appendChild(seg);
+  });
+}
+
+function updateProgress(){
+  questions.forEach((_,i)=>{
+    document.getElementById('seg-'+i).style.width = i <= current ? '100%' : '0%';
+  });
+}
+
+function renderQuestion(){
+  updateProgress();
+  const q = questions[current];
+  document.getElementById('qnum').textContent = (current+1) + ' / ' + questions.length + ' · ' + q.catName;
+  document.getElementById('qtext').textContent = q.text;
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  q.options.forEach((o, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = o.t;
+    if(answers[current] === idx) btn.classList.add('chosen');
+    btn.onclick = ()=> selectAnswer(idx);
+    opts.appendChild(btn);
+  });
+  document.getElementById('backBtn').className = current > 0 ? 'nav-back show' : 'nav-back';
+}
+
+function selectAnswer(idx){
+  answers[current] = idx;
+  if(current < questions.length - 1){
+    current++;
+    setTimeout(renderQuestion, 90);
+  } else {
+    setTimeout(showResult, 140);
+  }
+}
+
+function goBack(){
+  if(current > 0){ current--; renderQuestion(); }
+}
+
+function showResult(){
+  document.getElementById('screen-quiz').style.display = 'none';
+  document.getElementById('screen-result').classList.remove('result-hidden');
+
+  let total = 0, max = questions.length * 2;
+  const catScores = {}, catCounts = {};
+  questions.forEach((q,i)=>{
+    const s = q.options[answers[i]].s;
+    total += s;
+    catScores[q.cat] = (catScores[q.cat]||0) + s;
+    catCounts[q.cat] = (catCounts[q.cat]||0) + 1;
+  });
+  const pct = Math.round((total/max)*100);
+  drawGauge(pct);
+
+  document.getElementById('resultPercent').textContent = pct + '% тело в доверии';
+
+  let title, text;
+  if(pct <= 33){
+    title = 'Твоё тело живёт в обороне';
+    text = '<p>Почти в каждой телесной реакции — напряжение, готовность, контроль. Это не «характер» и не физиология — это стратегия, которую тело выучило когда-то и с тех пор не выключает, даже рядом с тем, кому можно доверять.</p><p>Проблема не в мужчинах рядом с тобой. Проблема в том, что тело физически не умеет расслабиться настолько, чтобы позволить кому-то позаботиться о нём — и рано или поздно оно начинает требовать оплаты этого счёта.</p>';
+  } else if(pct <= 66){
+    title = 'Тело в переходной точке';
+    text = '<p>В теле уже есть опыт расслабления и доверия — но рядом с ним живёт старая привычка сжиматься и контролировать. Это самая нестабильная точка: без внимания к телу легко откатиться в напряжение в первый же тревожный момент.</p><p>Ниже — зоны тела, с которых стоит начинать в первую очередь.</p>';
+  } else {
+    title = 'Тело преимущественно в доверии';
+    text = '<p>Твоё тело умеет расслабляться, принимать и оставаться в контакте — редкое состояние среди реализованных женщин. При этом, скорее всего, есть 1-2 зоны, где старое напряжение всё ещё включается — они видны ниже.</p>';
+  }
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultText').innerHTML = text;
+
+  const catsEl = document.getElementById('cats');
+  catsEl.innerHTML = '';
+  const order = Object.keys(catScores).sort((a,b)=> (catScores[a]/catCounts[a]) - (catScores[b]/catCounts[b]));
+  order.forEach(cat=>{
+    const avgPct = Math.round((catScores[cat] / (catCounts[cat]*2)) * 100);
+    const meta = catMeta[cat];
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="cat-head"><span class="cat-name">${meta.name}</span><span class="cat-tag">${avgPct}%</span></div>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${avgPct}%"></div></div>
+    `;
+    catsEl.appendChild(row);
+  });
+
+  const weakest = order[0];
+  const second = order[1];
+  document.getElementById('focusText').textContent =
+    `Зона «${catMeta[weakest].name}» просела больше остальных: сейчас ты ${catMeta[weakest].low}. Именно отсюда безопаснее всего начинать телесную работу.`;
+
+  document.getElementById('mirrorText').innerHTML =
+    `Вероятно, ты никогда не формулировала это так прямо: в зонах «${catMeta[weakest].name}» и «${catMeta[second].name}» тело продолжает держать оборону даже там, где разум уже готов довериться. Это не слабость и не «зажатость характера» — это стратегия, которая просто ещё не знает, что можно иначе.`;
+}
+
+function drawGauge(pct){
+  const svg = document.getElementById('gauge');
+  const cx = 130, cy = 130, r = 100;
+  const angle = 180 - (pct/100)*180;
+  function polar(cx,cy,r,deg){ const a=(deg*Math.PI)/180; return {x:cx+r*Math.cos(a), y:cy-r*Math.sin(a)}; }
+  const p0 = polar(cx,cy,r,180), p1 = polar(cx,cy,r,angle);
+  const needleEnd = polar(cx,cy,r-16,angle);
+  svg.innerHTML = `
+    <path d="M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${polar(cx,cy,r,0).x} ${polar(cx,cy,r,0).y}" fill="none" stroke="#332B20" stroke-width="13" stroke-linecap="round"/>
+    <path d="M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}" fill="none" stroke="url(#grad)" stroke-width="13" stroke-linecap="round"/>
+    <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#8A6F35"/><stop offset="100%" stop-color="#E4C878"/></linearGradient></defs>
+    <line x1="${cx}" y1="${cy}" x2="${needleEnd.x}" y2="${needleEnd.y}" stroke="#E4C878" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="5" fill="#E4C878"/>
+  `;
+}
+
+function wantAudit(){
+  if(typeof sendPrompt === 'function'){
+    sendPrompt('Хочу записаться на аудит по смене стратегии с Анной Беневоленской');
+  } else {
+    alert('Спасибо! Мы свяжемся с вами для записи на аудит.');
+  }
+}
+</script>
+</body>
+</html>
